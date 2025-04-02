@@ -1,0 +1,11 @@
+numpy
+opencv-python
+pillow
+spellchecker
+keras
+tensorflow
+tk
+matplotlib
+pandas
+scikit-learn
+requests
