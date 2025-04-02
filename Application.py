@@ -1,33 +1,21 @@
 # Importing Libraries
-
 import numpy as np
-
 import cv2
-import os, sys
-import time
+import os
 import operator
-
 from string import ascii_uppercase
-
 import tkinter as tk
 from PIL import Image, ImageTk
-
-# from hunspell import Hunspell
 from spellchecker import SpellChecker  # Instead of hunspell
-import enchant
-
 from keras.models import model_from_json
 
+# Configure Theano to use GPU acceleration
 os.environ["THEANO_FLAGS"] = "device=cuda, assert_no_cpu_op=True"
 
 #Application :
-
 class Application:
-
     def __init__(self):
-
-        # self.hs = Hunspell('en_US')
-        self.spell = SpellChecker()  # Replace hunspell initialization
+        self.spell = SpellChecker()  # spell checker for word suggestions
         self.vs = cv2.VideoCapture(0)
         self.current_image = None
         self.current_image2 = None
@@ -66,6 +54,7 @@ class Application:
         
         print("Loaded model from disk")
 
+        # Create and arrange all GUI elements
         self.root = tk.Tk()
         self.root.title("Sign Language To Text Conversion")
         self.root.protocol('WM_DELETE_WINDOW', self.destructor)
@@ -145,18 +134,15 @@ class Application:
 
             cv2image = cv2image[y1 : y2, x1 : x2]
 
+            # Convert hand region to processed binary image for model input
             gray = cv2.cvtColor(cv2image, cv2.COLOR_BGR2GRAY)
-
             blur = cv2.GaussianBlur(gray, (5, 5), 2)
-
             th3 = cv2.adaptiveThreshold(blur, 255 ,cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
-
             ret, res = cv2.threshold(th3, 70, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
             
             self.predict(res)
 
             self.current_image2 = Image.fromarray(res)
-
             imgtk = ImageTk.PhotoImage(image = self.current_image2)
 
             self.panel2.imgtk = imgtk
@@ -172,27 +158,20 @@ class Application:
             predicts = list(self.spell.candidates(self.word))[:5]  # Get top 5 suggestions
             
             if(len(predicts) > 1):
-
                 self.bt1.config(text = predicts[0], font = ("Courier", 20))
-
             else:
-
                 self.bt1.config(text = "")
 
+
             if(len(predicts) > 2):
-
                 self.bt2.config(text = predicts[1], font = ("Courier", 20))
-
             else:
-
                 self.bt2.config(text = "")
 
+
             if(len(predicts) > 3):
-
                 self.bt3.config(text = predicts[2], font = ("Courier", 20))
-
             else:
-
                 self.bt3.config(text = "")
 
 
@@ -208,7 +187,6 @@ class Application:
         result_smn = self.loaded_model_smn.predict(test_image.reshape(1 , 128 , 128 , 1))
 
         prediction = {}
-
         prediction['blank'] = result[0][0]
 
         inde = 1
@@ -362,6 +340,6 @@ class Application:
         self.vs.release()
         cv2.destroyAllWindows()
     
-print("Starting Application...")
+print("Starting Sign Language Translator...")
 
 (Application()).root.mainloop()
